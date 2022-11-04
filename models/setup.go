@@ -11,7 +11,7 @@ var DB *gorm.DB
 
 //connection user
 func ConnectDatabase() {
-	db, err := gorm.Open(mysql.Open("root:@tcp(localhost:3306)/kammi"))
+	db, err := gorm.Open(mysql.Open("root:@tcp(192.168.138.139:3306)/kammi"))
 	if err != nil {
 		fmt.Println("Gagal koneksi database")
 	}
@@ -19,4 +19,14 @@ func ConnectDatabase() {
 	DB = db
 }
 
+// func ConnectDatabase() {
+// 	db, err := gorm.Open(mysql.Open("root:@tcp(192.168.138.139:3306)/mydb"))
+// 	if err != nil {
+// 		fmt.Println("Gagal koneksi database")
+// 	}
+
+// 	DB = db
+// }
+
 //192.168.138.139
+//localhost

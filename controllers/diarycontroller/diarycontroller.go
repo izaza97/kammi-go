@@ -20,7 +20,8 @@ func GetAllDiary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	diary := []models.Diaryscn{}
+	var diary []models.Diaryscn
+	var diaryu models.Dd
 	diaryInput := models.Diary{User: user}
 	if err := models.DB.Table("diary-data").Where(&diaryInput, user).Find(&diary).Error; err != nil {
 		response := map[string]string{"message": err.Error()}
@@ -28,13 +29,17 @@ func GetAllDiary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	diaryInput.User = user
-
-	helper.ResponseJSON(w, http.StatusOK, diary)
+	diaryu.Data = diary
+	w.Header().Set("Content-Type", "appication/json")
+	json.NewEncoder(w).Encode(diaryu)
 }
 
 func CreateDiary(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+	errr := r.ParseForm()
+	if errr != nil {
+		panic(errr)
+	}
 	//mengambil user dari parameter
 	user, err := strconv.ParseInt(vars["user"], 10, 64)
 	if err != nil {
@@ -43,14 +48,12 @@ func CreateDiary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// memasukan parameter user ke database dan membuat datetime
-	diaryInput := models.Diary{User: user, Time: time.Now()}
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&diaryInput); err != nil {
-		helper.ResponseError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	defer r.Body.Close()
+	now := time.Now()
+	diaryInput := models.Diary{User: user, Time: now.Local()}
+	judul := r.Form.Get("judul")
+	isi := r.Form.Get("isi")
+	diaryInput.Judul = judul
+	diaryInput.Isi = isi
 
 	// input ke database
 	if err := models.DB.Table("diary-data").Create(&diaryInput).Error; err != nil {
@@ -67,6 +70,10 @@ func CreateDiary(w http.ResponseWriter, r *http.Request) {
 
 func GetDiary(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+	errr := r.ParseForm()
+	if errr != nil {
+		panic(errr)
+	}
 	user, err := strconv.ParseInt(vars["user"], 10, 64)
 	if err != nil {
 		helper.ResponseError(w, http.StatusBadRequest, err.Error())
@@ -78,8 +85,9 @@ func GetDiary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var diary models.Diaryscn
-	diaryInput := models.Diary{User: user}
+	var diary []models.Diarys
+	var diarys models.Dd2
+	diaryInput := models.Diary{User: user, No: no}
 
 	if err := models.DB.Table("diary-data").Where(&diaryInput, user).Find(&diary, no).Error; err != nil {
 		response := map[string]string{"message": err.Error()}
@@ -88,13 +96,22 @@ func GetDiary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	diaryInput.User = user
-	diary.No = no
+	diarys.Data = diary
 
-	helper.ResponseJSON(w, http.StatusOK, diary)
+	helper.ResponseJSON(w, http.StatusOK, diarys)
 }
 
 func UpdateDiary(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+	errr := r.ParseForm()
+	if errr != nil {
+		panic(errr)
+	}
+	user, err := strconv.ParseInt(vars["user"], 10, 64)
+	if err != nil {
+		helper.ResponseError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 	//mengambil user dari parameter
 	no, err := strconv.ParseInt(vars["no"], 10, 64)
 	if err != nil {
@@ -103,14 +120,11 @@ func UpdateDiary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// memasukan parameter id ke database
-	diaryInput := models.Diary{No: no}
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&diaryInput); err != nil {
-		helper.ResponseError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	defer r.Body.Close()
+	diaryInput := models.Diary{User: user, No: no}
+	judul := r.Form.Get("judul")
+	isi := r.Form.Get("isi")
+	diaryInput.Judul = judul
+	diaryInput.Isi = isi
 
 	// input ke database
 	if err := models.DB.Table("diary-data").Where("no = ?", no).Updates(&diaryInput).Error; err != nil {

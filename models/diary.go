@@ -14,5 +14,19 @@ type Diaryscn struct {
 	No    int64  `gorm:"primaryKey" json:"no"`
 	Time  string `json:"time"`
 	Judul string `json:"judul"`
+}
+
+type Dd struct {
+	Data []Diaryscn
+}
+
+type Diarys struct {
+	No    int64  `gorm:"primaryKey" json:"no"`
+	Time  string `json:"time"`
+	Judul string `json:"judul"`
 	Isi   string `json:"isi"`
+}
+
+type Dd2 struct {
+	Data []Diarys
 }
